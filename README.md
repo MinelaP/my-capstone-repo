@@ -1,6 +1,6 @@
 # My Capstone Project
 
-Frontend AI Engineering Capstone project for the 10x.ai internship program.
+Frontend AI Engineering Capstone project for the FlyRank AI internship program.
 
 ## Tech Stack
 - Node.js
@@ -13,4 +13,4 @@ git clone [https://github.com/your-username/my-capstone-repo.git](https://github
 cd my-capstone-repo
 ``n
 ## License
-MIT — see [LICENSE](LICENSE).
+MIT â€” see [LICENSE](LICENSE).
