@@ -1,35 +1,34 @@
 import { NextResponse } from 'next/server';
-import { executeScoreLead, scoreLeadSchema } from '@/lib/tools/scoreLead';
 
 export async function POST(req: Request) {
   try {
-    const { prompt } = await req.json();
+    const { prompt, testMode } = await req.json();
 
-    // Jednostavno parsiranje iz unesenog teksta radi testiranja
-    const isErrorTest = prompt.toLowerCase().includes('fail');
-    
-    const mockInput = {
-      companyName: isErrorTest ? 'FAIL Corp' : 'Acme Corp',
-      employeeCount: 120,
-      budget: isErrorTest ? -100 : 50000,
-      industry: 'IT & Software',
-    };
+    // 1. Sabotaža: Rate limit (429 HTTP status)
+    if (testMode === 'rate-limit') {
+      return NextResponse.json(
+        { success: false, error: 'Too Many Requests (429): Prekoračen je dozvoljeni broj zahtjeva.' },
+        { status: 429 }
+      );
+    }
 
-    // Validacija ulaza preko Zod sheme
-    const validatedInput = scoreLeadSchema.parse(mockInput);
+    // 2. Sabotaža: Mid-stream / Server error (500 HTTP status)
+    if (testMode === 'server-error' || prompt.toLowerCase().includes('fail')) {
+      return NextResponse.json(
+        { success: false, error: 'Internal Server Error (500): Stream je neočekivano prekinut.' },
+        { status: 500 }
+      );
+    }
 
-    // Izvršavanje alata
-    const result = await executeScoreLead(validatedInput);
-
+    // 3. Happy Path: Uspješan odgovor
     return NextResponse.json({
       success: true,
-      input: validatedInput,
-      output: result,
+      message: `Uspješno obrađeno: "${prompt}". AI servis je generisao odgovor bez grešaka.`,
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error.message || 'Greška pri izvršavanju alata' },
-      { status: 400 }
+      { success: false, error: error.message || 'Nepoznata sistemska greška' },
+      { status: 500 }
     );
   }
 }
